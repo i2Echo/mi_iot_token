@@ -1,8 +1,7 @@
 name: mi_iot_token
 description: A Flutter package for xiaomi iot token extract.
 version: 0.0.1
-author: kujohnln<sama2echo@gmail.com>
-homepage: 
+homepage: https://github.com/i2Echo/mi_iot_token
 
 environment:
   sdk: ">=2.16.1 <3.0.0"
@@ -11,12 +10,9 @@ environment:
 dependencies:
   convert: ^3.0.2
   crypto: ^3.0.2
-  cryptography: ^2.0.5
   flutter:
     sdk: flutter
   http: ^0.13.5
-  logger: ^1.1.0
-  tuple: ^2.0.0
 
 dev_dependencies:
   flutter_test:

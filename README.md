@@ -11,7 +11,7 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages). 
 -->
 
-A xiaomi iot device extractor.
+A xiaomi iot token extractor.
 
 ## Features
 
@@ -40,3 +40,6 @@ void main() async {
   print(data);
 }
 ```
+## License
+
+Released under the [MIT](https://kujohnln.mit-license.org) License.
