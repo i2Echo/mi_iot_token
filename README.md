@@ -22,7 +22,7 @@ You can login to your mi iot account by your id & password, and get device list.
 
 ```yaml
 dependencies:
-  mi_iot_token: ^0.0.1
+  mi_iot_token: ^0.0.2
 ```
 
 ## Usage
