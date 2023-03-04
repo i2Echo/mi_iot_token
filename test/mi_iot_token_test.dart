@@ -1,7 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:mi_iot_token/mi_iot_token.dart';
-import 'package:mi_iot_token/src/api.dart';
+import 'package:test/test.dart';
 
 void main() {
   // test("login", () async {
