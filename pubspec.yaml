@@ -1,6 +1,6 @@
 name: mi_iot_token
 description: A Flutter package for xiaomi iot token extract.
-version: 0.0.4
+version: 0.1.0
 homepage: https://github.com/i2Echo/mi_iot_token
 
 environment:
