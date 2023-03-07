@@ -3,17 +3,21 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
+import 'package:mi_iot_token/src/regions.dart';
 
 class Api {
   String apiUrl = 'https://api.io.mi.com/app';
-  List allowCounty = ["", "ru", "us", "tw", "sg", "cn", "de", "in", "i2"];
+  List allowCounty = regions;
 
   Api(country) {
     this.apiUrl = this.getApiUrl(country);
   }
 
   getApiUrl(country) {
-    if (this.allowCounty.firstWhere((o) => o == country) == false) {
+    country = country != null ? country.toLowerCase() : '';
+
+    if (this.allowCounty.firstWhere((o) => o == country, orElse: () => null) ==
+        null) {
       throw 'Country is not allow';
     }
 
