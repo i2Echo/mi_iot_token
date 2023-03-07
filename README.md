@@ -1,7 +1,7 @@
 
 A xiaomi iot token extractor.
 
-[![pub package](https://img.shields.io/pub/v/universal_io.svg)](https://pub.dev/packages/mi_iot_token)
+[![pub package](https://img.shields.io/pub/v/mi_iot_token.svg)](https://pub.dev/packages/mi_iot_token)
 
 ## Features
 
