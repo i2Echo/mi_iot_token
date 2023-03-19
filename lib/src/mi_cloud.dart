@@ -23,19 +23,28 @@ class MiCloud {
   String nonce = '';
   String signedNonce = '';
 
-  final List allowCountry = ['ru', 'us', 'tw', 'sg', 'cn', 'de', 'in', 'i2'];
+  final List<String> allowCountry = [
+    'ru',
+    'us',
+    'tw',
+    'sg',
+    'cn',
+    'de',
+    'in',
+    'i2'
+  ];
 
   // set your mi account region, if you don't have one, please use empty string represent all regions.
   void setRegion(String rg) {
     // ignore: parameter_assignments
     rg = rg.toLowerCase();
-    if (allowCountry.firstWhere((o) => o == rg, orElse: () => null) == null) {
+    if (allowCountry.firstWhere((o) => o == rg, orElse: () => '').isEmpty) {
       throw 'Country is not allow';
     }
     region = rg;
   }
 
-  Future login(String userName, String password) async {
+  Future<void> login(String userName, String password) async {
     if (isLoggedIn()) {
       throw 'You are already logged in with username ${this.userName}. Login not required!';
     }
@@ -93,7 +102,7 @@ class MiCloud {
     security = tokens["security"];
   }
 
-  Future _getServiceToken(String location) async {
+  Future<String> _getServiceToken(String location) async {
     String token;
     final response = await http.get(Uri.parse(location));
     if (response.statusCode == 200) {
@@ -148,7 +157,7 @@ class MiCloud {
   }
 
   // ignore: type_annotate_public_apis
-  Future getMiotProps(params) async {
+  Future<dynamic> getMiotProps(params) async {
     final req = {
       "params": params,
     };
@@ -158,7 +167,7 @@ class MiCloud {
   }
 
   // ignore: type_annotate_public_apis
-  Future setMiotProps(params) async {
+  Future<dynamic> setMiotProps(params) async {
     final req = {
       "params": params,
     };
@@ -177,7 +186,7 @@ class MiCloud {
     return result;
   }
 
-  Future _requestWithEncryption(String path, data) async {
+  Future<dynamic> _requestWithEncryption(String path, data) async {
     if (!isLoggedIn()) {
       throw 'Please login first!';
     }
@@ -199,7 +208,7 @@ class MiCloud {
     headers.putIfAbsent("x-xiaomi-protocal-flag-cli", () => "PROTOCAL-HTTP2");
     headers.putIfAbsent(
       "Cookie",
-      () => "userId=${userId.toString()}; serviceToken=$serviceToken",
+      () => "userId=$userId; serviceToken=$serviceToken",
     );
     final url = _getApiUrl() + path;
     final response =

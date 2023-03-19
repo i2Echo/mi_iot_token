@@ -1,4 +1,4 @@
-const List regions = [
+const List<String> regions = [
   "af",
   "al",
   "dz",
