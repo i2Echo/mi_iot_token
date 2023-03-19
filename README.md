@@ -1,36 +1,77 @@
 
-A xiaomi iot token extractor.
+A xiaomi iot token extractor and device controller for dart.
 
 [![pub package](https://img.shields.io/pub/v/mi_iot_token.svg)](https://pub.dev/packages/mi_iot_token)
 
 ## Features
+Your can control your xiaomi devices by this package.
 
-You can login to your mi iot account by your id & password, and get device list. 
+* Get xiaomi cloud iot token by username and password.
+* Get device list.
+* Get device properties.
+* Set device properties.
+* Call device action.
 
 ## Getting started
 ### Add dependency
 
 ```yaml
 dependencies:
-  mi_iot_token: ^0.0.2
+  mi_iot_token: ^1.0.0
 ```
 
 ## Usage
 
 ```dart
 void main() async {
-  var auth = Auth();
-  var api = Api("cn"); // your country code
-  var user = await auth.login(
-      "your id or name", "password"); // your id or name and password
+  MiCloud miCloud = MiCloud();
+  var account = null;
+  var deviceConfig = null;
 
-  var data = await api.getDeviceList(
-      user["userId"], user["ssecurity"], user["token"], "cn"); // your two-letter codes 
+  // your can find config example in config.example.json
+  final configFile = File('./example/my_config.json');
+  final jsonString = await configFile.readAsString();
+  final dynamic jsonMap = jsonDecode(jsonString);
 
-  print(data);
+  account = jsonMap['account'];
+  deviceConfig = jsonMap['device'];
+  await miCloud.login(account["username"], account['password']);
+  print("login success");
+
+  // set region, if not sure, may be unset that.
+  miCloud.setRegion('cn');
+  // get mi cloud device list by device ids, if deviceIds is null, get all devices.
+  var devices = await miCloud.getDevices();
+  print(devices);
+
+  // get a devices by device id
+  var device = await miCloud.getDeviceData(deviceConfig['did']);
+  print(device);
+
+  // get device props
+  var result = await miCloud.getMiotProps(deviceConfig['getProps']);
+  print(result);
+
+  // set device props
+  var setResult = await miCloud.setMiotProps(deviceConfig['setProps']);
+  print(setResult);
+
+  // call device action
+  var actionResult = await miCloud.miotAction(deviceConfig['action']);
+  print(actionResult);
 }
 ```
-### regions
+
+### Device spec reference
+* [Official miot spec](https://home.miot-spec.com/)
+
+* [Official doc](https://iot.mi.com/new/doc/accesses/direct-access/other-platform-access/control-api#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5)
+
+* [A miotspec metadata fetcher](https://www.merdok.org/miotspec/)
+
+### regions (Unverified)
+If your not sure which region to use, you can try to unset it.
+
 Here are the two-letter codes for all countries or region(case-insensitive):
 
 - Afghanistan: AF
@@ -279,6 +320,8 @@ Here are the two-letter codes for all countries or region(case-insensitive):
 - Zambia: ZM
 - Zimbabwe: ZW
 
+## Thanks
+This project inspired by [homebridge-miot](https://github.com/merdok/homebridge-miot).
 ## License
 
 Released under the [MIT](https://kujohnln.mit-license.org) License.

@@ -1,0 +1,19 @@
+{
+    "account": {
+        "username": "your username or email",
+        "password": "your password"
+    },
+    "device": { // your can view your device info in https://home.miot-spec.com
+        "did": "your deviceId",
+        "getProps": [
+            {"did": "your deviceId", "siid": 2, "piid": 1},
+            {"did": "your deviceId", "siid": 2, "piid": 2}
+        ],
+        "setProps": [
+            {"did": "your deviceId", "siid": 2, "piid": 1, "value": true},
+            {"did": "your deviceId", "siid": 2, "piid": 2, "value": 5}
+        ],
+        "action": {"did": "your deviceId", "siid": 7, "aiid": 1, "in": [{"piid": 1, "value": false}]}
+    }
+
+}

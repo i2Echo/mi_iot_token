@@ -1,27 +1,60 @@
+import 'dart:io';
+import 'dart:convert';
+
 import 'package:mi_iot_token/mi_iot_token.dart';
 import 'package:test/test.dart';
 
-void main() {
-  // test("login", () async {
-  //   var auth = Auth();
-  //   await auth.login("your id or name", "your password");
-  //   // expect(1, 1);
-  // });
+void main() async {
+  late MiCloud miCloud = MiCloud();
+  var account = null;
+  var deviceConfig = null;
 
-  // test("generateNonce", () async {
-  //   var api = Api("cn");
-  //   await api.generateNonce("WSqb+Xr8kwkTM9ZEysQseQ==");
-  //   // expect(1, 1);
-  // });
+  setUpAll(() async {
+    final configFile = File(
+        './example/my_config.json'); // your can find config example in config.example.json
+    final jsonString = await configFile.readAsString();
+    final dynamic jsonMap = jsonDecode(jsonString);
+
+    account = jsonMap['account'];
+    deviceConfig = jsonMap['device'];
+    await miCloud.login(account["username"], account['password']);
+    print("login success");
+  });
+  tearDownAll(() {
+    miCloud.loginOut();
+  });
 
   test("getDevices", () async {
-    var auth = Auth();
-    var api = Api("cn");
-    var user = await auth.login("your id or name", "your password");
+    print(miCloud.serviceToken);
+    expect(miCloud.isLoggedIn(), isTrue);
+    var devices = await miCloud.getDevices();
+    print(devices);
+    // expect(1, 1);
+  });
 
-    await api.getDeviceList(
-        user["userId"], user["ssecurity"], user["token"], "cn");
+  test("getDeviceData", () async {
+    expect(miCloud.isLoggedIn(), isTrue);
+    var device = await miCloud.getDeviceData(deviceConfig['did']);
+    print(device);
+    // expect(1, 1);
+  });
 
-    //expect(1, 1);
+  test("getMiotProps", () async {
+    expect(miCloud.isLoggedIn(), isTrue);
+    var result = await miCloud.getMiotProps(deviceConfig['getProps']);
+    print(result);
+    // expect(1, 1);
+  });
+  test("setMiotProps", () async {
+    expect(miCloud.isLoggedIn(), isTrue);
+    var result = await miCloud.setMiotProps(deviceConfig['setProps']);
+    print(result);
+    // expect(1, 1);
+  });
+  test("miotAction", () async {
+    expect(miCloud.isLoggedIn(), isTrue);
+    var result = await miCloud.miotAction(deviceConfig['action']);
+    print(result);
+    // expect(1, 1);
   });
 }

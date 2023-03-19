@@ -1,4 +1,3 @@
 library mi_iot_token;
 
-export 'src/api.dart';
-export 'src/auth.dart';
+export 'src/mi_cloud.dart';
