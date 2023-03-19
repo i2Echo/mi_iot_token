@@ -321,7 +321,7 @@ Here are the two-letter codes for all countries or region(case-insensitive):
 - Zimbabwe: ZW
 
 ## Thanks
-This project inspired by [homebridge-miot](https://github.com/merdok/homebridge-miot).
+This project was inspired by [homebridge-miot](https://github.com/merdok/homebridge-miot).
 ## License
 
 Released under the [MIT](https://kujohnln.mit-license.org) License.
