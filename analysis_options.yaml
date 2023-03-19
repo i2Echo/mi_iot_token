@@ -4,10 +4,13 @@ include: package:lint/analysis_options.yaml
 # https://dart.dev/guides/language/analysis-options
 
 analyzer:
-  exclude: ['./example/**', './test/**']
+  exclude: ['example/**', 'test/**']
   language:
     strict-casts: true
-    strict-raw-types: true
+    strict-raw-types: false
   errors:
     argument_type_not_assignable: ignore
     invalid_assignment: ignore
+linter:
+  rules:
+    sort_pub_dependencies: false

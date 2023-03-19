@@ -1,11 +1,13 @@
+// ignore_for_file: avoid_dynamic_calls, join_return_with_assignment
+
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:crypto/crypto.dart';
+import 'package:http/http.dart' as http;
 import 'package:mi_iot_token/src/models/action_res.dart';
 import 'package:mi_iot_token/src/models/device.dart';
+import 'package:mi_iot_token/src/models/mi_cloud_res.dart';
 import 'package:mi_iot_token/src/utils.dart';
-
-import 'models/mi_cloud_res.dart';
 
 class MiCloud {
   final String loginUrl = 'https://account.xiaomi.com/pass/serviceLoginAuth2';
@@ -24,7 +26,7 @@ class MiCloud {
   final List allowCountry = ['ru', 'us', 'tw', 'sg', 'cn', 'de', 'in', 'i2'];
 
   // set your mi account region, if you don't have one, please use empty string represent all regions.
-  setRegion(String rg) {
+  void setRegion(String rg) {
     // ignore: parameter_assignments
     rg = rg.toLowerCase();
     if (allowCountry.firstWhere((o) => o == rg, orElse: () => null) == null) {
@@ -33,28 +35,28 @@ class MiCloud {
     region = rg;
   }
 
-  login(String userName, String password) async {
+  Future login(String userName, String password) async {
     if (isLoggedIn()) {
       throw 'You are already logged in with username ${this.userName}. Login not required!';
     }
 
-    Map<String, String> data = Map();
+    final Map<String, String> data = {};
     data.putIfAbsent("sid", () => 'xiaomiio');
-    data.putIfAbsent('hash', () => Utils.convertToHash(password));
+    data.putIfAbsent('hash', () => convertToHash(password));
     data.putIfAbsent('user', () => userName);
     data.putIfAbsent('_json', () => 'true');
 
-    var response = await http.post(Uri.parse(loginUrl), body: data);
+    final response = await http.post(Uri.parse(loginUrl), body: data);
     if (response.statusCode == 200) {
-      var data = response.body.replaceAll("&&&START&&&", "");
+      final data = response.body.replaceAll("&&&START&&&", "");
       // print(data);
-      Map<String, dynamic> map = json.decode(data);
+      final Map<String, dynamic> map = json.decode(data);
       if (map["ssecurity"] == null || map["location"] == null) {
         throw "Can`t login";
       }
-      var token = await _getServiceToken(map["location"]);
+      final token = await _getServiceToken(map["location"]);
 
-      var authTokens = {
+      final authTokens = {
         "security": map["ssecurity"],
         "serviceToken": token,
         "userId": map["userId"]
@@ -85,23 +87,25 @@ class MiCloud {
     password = "";
   }
 
-  _setServiceToken(tokens) {
+  void _setServiceToken(tokens) {
     serviceToken = tokens["serviceToken"];
     userId = tokens["userId"];
     security = tokens["security"];
   }
 
   Future _getServiceToken(String location) async {
-    var token;
-    var response = await http.get(Uri.parse(location));
+    String token;
+    final response = await http.get(Uri.parse(location));
     if (response.statusCode == 200) {
-      var cookie = response.headers["set-cookie"];
+      final cookie = response.headers["set-cookie"];
       token = _getCookieValue(cookie!, "serviceToken");
+      return token;
+    } else {
+      throw response.body;
     }
-    return token;
   }
 
-  refreshServiceToken() {
+  void refreshServiceToken() {
     security = "";
     userId = 0;
     serviceToken = "";
@@ -115,7 +119,7 @@ class MiCloud {
 
   // get mi cloud device list, if deviceIds is null, get all devices
   Future<List<Device>> getDevices({List<String>? deviceIds}) async {
-    var req = deviceIds != null
+    final req = deviceIds != null
         ? {
             "dids": deviceIds,
           }
@@ -124,49 +128,52 @@ class MiCloud {
             "getHuamiDevices": 0,
           };
     const deviceListPath = "/home/device_list";
-    var result = await _requestWithEncryption(deviceListPath, req);
-    List<Device> list =
+    final result = await _requestWithEncryption(deviceListPath, req);
+    final List<Device> list =
         result['list'].map<Device>((o) => Device.fromJson(o)).toList();
     return list;
   }
 
   Future<Device> getDeviceData(String did) async {
-    var req = {
+    final req = {
       "dids": [did],
     };
     const deviceDataPath = "/home/device_list";
-    var result = await _requestWithEncryption(deviceDataPath, req);
+    final result = await _requestWithEncryption(deviceDataPath, req);
     if (result['list'].length == 0 || result['list'][0] == null) {
       throw 'Device not found';
     }
-    var deviceData = Device.fromJson(result['list'][0]);
+    final deviceData = Device.fromJson(result['list'][0]);
     return deviceData;
   }
 
+  // ignore: type_annotate_public_apis
   Future getMiotProps(params) async {
-    var req = {
+    final req = {
       "params": params,
     };
-    var data = await _requestWithEncryption('/miotspec/prop/get', req);
+    final data = await _requestWithEncryption('/miotspec/prop/get', req);
     // var result = ActionResData.fromJson(data);
     return data;
   }
 
+  // ignore: type_annotate_public_apis
   Future setMiotProps(params) async {
-    var req = {
+    final req = {
       "params": params,
     };
-    var data = await _requestWithEncryption('/miotspec/prop/set', req);
+    final data = await _requestWithEncryption('/miotspec/prop/set', req);
     // var result = ActionResData.fromJson(data);
     return data;
   }
 
+  // ignore: type_annotate_public_apis
   Future<ActionResData> miotAction(params) async {
-    var req = {
+    final req = {
       "params": params,
     };
-    var data = await _requestWithEncryption('/miotspec/action', req);
-    var result = ActionResData.fromJson(data);
+    final data = await _requestWithEncryption('/miotspec/action', req);
+    final result = ActionResData.fromJson(data);
     return result;
   }
 
@@ -174,25 +181,32 @@ class MiCloud {
     if (!isLoggedIn()) {
       throw 'Please login first!';
     }
-    var nonceMap = _generateNonce(security);
-    var signature = _generateSignature(
-        path, nonceMap["signedNonce"], nonceMap["nonce"], data);
+    final nonceMap = _generateNonce(security);
+    final signature = _generateSignature(
+      path,
+      nonceMap["signedNonce"],
+      nonceMap["nonce"],
+      data,
+    );
 
-    Map<String, String> body = Map();
+    final Map<String, String> body = {};
+    // ignore: cast_nullable_to_non_nullable
     body.putIfAbsent("_nonce", () => nonceMap["nonce"] as String);
     body.putIfAbsent('signature', () => signature);
     body.putIfAbsent('data', () => json.encode(data));
 
-    Map<String, String> headers = Map();
+    final Map<String, String> headers = {};
     headers.putIfAbsent("x-xiaomi-protocal-flag-cli", () => "PROTOCAL-HTTP2");
     headers.putIfAbsent(
-        "Cookie", () => "userId=${userId}; serviceToken=${serviceToken}");
-    var url = _getApiUrl() + path;
-    var response =
+      "Cookie",
+      () => "userId=${userId.toString()}; serviceToken=$serviceToken",
+    );
+    final url = _getApiUrl() + path;
+    final response =
         await http.post(Uri.parse(url), headers: headers, body: body);
     if (response.statusCode == 200) {
       // print(response.body);
-      var res = MiCloudResponse.fromRawJson(response.body);
+      final res = MiCloudResponse.fromRawJson(response.body);
       if (res.message == "ok") {
         return res.result;
       } else {
@@ -205,53 +219,53 @@ class MiCloud {
 
   static String _getCookieValue(String cookie, String key) {
     // print(cookie);
-    var cookies = cookie.split('; ');
-    for (var i = 0, l = cookies.length; i < l; i++) {
-      var parts = cookies[i].split(',');
-      if (parts.length > 1 && parts[1].indexOf(key + "=") > -1) {
-        return parts[1].replaceAll(key + "=", "");
+    final cookies = cookie.split('; ');
+    for (var i = 0; i < cookies.length; i++) {
+      final parts = cookies[i].split(',');
+      if (parts.length > 1 && parts[1].contains("$key=")) {
+        return parts[1].replaceAll("$key=", "");
       }
     }
     throw 'Cookie not found';
   }
 
   String _getApiUrl() {
-    String regionDomain = region == 'cn' ? '' : region + '.';
+    final String regionDomain = region == 'cn' ? '' : '$region.';
 
     return "https://${regionDomain}api.io.mi.com/app";
   }
 
   Map<String, String> _generateNonce(String security) {
-    var nonceBytes = Utils.randomBytes(12);
+    final nonceBytes = randomBytes(12);
     // print(nonceBytes);
-    var securityBytes = base64Decode(security);
+    final securityBytes = base64Decode(security);
     // print(securityBytes);
-    List<int> value = [];
+    final List<int> value = [];
     value.addAll(securityBytes);
     value.addAll(nonceBytes);
 
-    var nonce = base64Encode(nonceBytes);
-    var signedNonce = base64.encode(sha256.convert(value).bytes);
+    final nonce = base64Encode(nonceBytes);
+    final signedNonce = base64.encode(sha256.convert(value).bytes);
 
     // print(nonce);
     // print(signedNonce);
 
-    return {"nonce": nonce, "signedNonce": signedNonce} as Map<String, String>;
+    return {"nonce": nonce, "signedNonce": signedNonce};
   }
 
   String _generateSignature(uri, signedNonce, nonce, data) {
-    var signatureParams = [
+    final signatureParams = [
       uri,
       signedNonce,
       nonce,
-      "data=" + json.encode(data)
+      "data=${json.encode(data)}"
     ];
-    var signedString = signatureParams.join('&');
+    final signedString = signatureParams.join('&');
 
-    List<int> messageBytes = utf8.encode(signedString);
-    List<int> key = base64.decode(signedNonce);
-    Hmac hmac = new Hmac(sha256, key);
-    Digest digest = hmac.convert(messageBytes);
+    final List<int> messageBytes = utf8.encode(signedString);
+    final List<int> key = base64.decode(signedNonce);
+    final Hmac hmac = Hmac(sha256, key);
+    final Digest digest = hmac.convert(messageBytes);
 
     return base64.encode(digest.bytes);
   }

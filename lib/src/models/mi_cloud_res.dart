@@ -2,6 +2,8 @@
 //
 //     final miCloudGetDeviceListResponse = miCloudGetDeviceListResponseFromJson(jsonString);
 
+// ignore_for_file: type_annotate_public_apis, prefer_typing_uninitialized_variables
+
 import 'dart:convert';
 
 class MiCloudResponse {
