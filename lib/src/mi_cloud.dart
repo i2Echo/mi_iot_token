@@ -13,27 +13,28 @@ class MiCloud {
   String apiUrl = 'https://api.io.mi.com/app';
   String region = 'cn';
 
-  var userName = null;
-  var password = null;
-  var serviceToken = null;
-  var userId = null;
-  var security = null;
-  var nonce = null;
-  var signedNonce = null;
+  String userName = '';
+  String password = '';
+  String serviceToken = '';
+  int userId = 0;
+  String security = '';
+  String nonce = '';
+  String signedNonce = '';
 
   final List allowCountry = ['ru', 'us', 'tw', 'sg', 'cn', 'de', 'in', 'i2'];
 
   // set your mi account region, if you don't have one, please use empty string represent all regions.
   setRegion(String rg) {
-    if (this.allowCountry.firstWhere((o) => o == rg, orElse: () => null) ==
-        null) {
+    // ignore: parameter_assignments
+    rg = rg.toLowerCase();
+    if (allowCountry.firstWhere((o) => o == rg, orElse: () => null) == null) {
       throw 'Country is not allow';
     }
-    this.region = rg;
+    region = rg;
   }
 
   login(String userName, String password) async {
-    if (this.isLoggedIn()) {
+    if (isLoggedIn()) {
       throw 'You are already logged in with username ${this.userName}. Login not required!';
     }
 
@@ -60,38 +61,38 @@ class MiCloud {
       };
       this.userName = userName;
       this.password = password;
-      this._setServiceToken(authTokens);
+      _setServiceToken(authTokens);
     } else {
       throw response.body;
     }
   }
 
-  isLoggedIn() {
-    return !(serviceToken == null);
+  bool isLoggedIn() {
+    return serviceToken.isNotEmpty;
   }
 
-  loginOut() {
-    if (!this.isLoggedIn()) {
+  void loginOut() {
+    if (!isLoggedIn()) {
       throw 'You are not logged in! Cannot log out!';
     }
-    this.serviceToken = null;
-    this.userId = null;
-    this.security = null;
+    serviceToken = '';
+    userId = 0;
+    security = '';
 
-    this.setRegion('cn');
+    setRegion('cn');
 
-    this.userName = null;
-    this.password = null;
+    userName = "";
+    password = "";
   }
 
   _setServiceToken(tokens) {
-    this.serviceToken = tokens["serviceToken"];
-    this.userId = tokens["userId"];
-    this.security = tokens["security"];
+    serviceToken = tokens["serviceToken"];
+    userId = tokens["userId"];
+    security = tokens["security"];
   }
 
-  _getServiceToken(String location) async {
-    var token = null;
+  Future _getServiceToken(String location) async {
+    var token;
     var response = await http.get(Uri.parse(location));
     if (response.statusCode == 200) {
       var cookie = response.headers["set-cookie"];
@@ -101,10 +102,15 @@ class MiCloud {
   }
 
   refreshServiceToken() {
-    this.security = null;
-    this.userId = null;
-    this.serviceToken = null;
-    this.login(this.userName, this.password);
+    security = "";
+    userId = 0;
+    serviceToken = "";
+
+    if (userName.isNotEmpty && password.isNotEmpty) {
+      login(userName, password);
+    } else {
+      throw 'Please login first!';
+    }
   }
 
   // get mi cloud device list, if deviceIds is null, get all devices
@@ -118,8 +124,9 @@ class MiCloud {
             "getHuamiDevices": 0,
           };
     const deviceListPath = "/home/device_list";
-    var result = await this._requestWithEncryption(deviceListPath, req);
-    var list = result['list'].map<Device>((o) => Device.fromJson(o)).toList();
+    var result = await _requestWithEncryption(deviceListPath, req);
+    List<Device> list =
+        result['list'].map<Device>((o) => Device.fromJson(o)).toList();
     return list;
   }
 
@@ -128,7 +135,7 @@ class MiCloud {
       "dids": [did],
     };
     const deviceDataPath = "/home/device_list";
-    var result = await this._requestWithEncryption(deviceDataPath, req);
+    var result = await _requestWithEncryption(deviceDataPath, req);
     if (result['list'].length == 0 || result['list'][0] == null) {
       throw 'Device not found';
     }
@@ -136,51 +143,51 @@ class MiCloud {
     return deviceData;
   }
 
-  getMiotProps(params) async {
+  Future getMiotProps(params) async {
     var req = {
       "params": params,
     };
-    var data = await this._requestWithEncryption('/miotspec/prop/get', req);
+    var data = await _requestWithEncryption('/miotspec/prop/get', req);
     // var result = ActionResData.fromJson(data);
     return data;
   }
 
-  setMiotProps(params) async {
+  Future setMiotProps(params) async {
     var req = {
       "params": params,
     };
-    var data = await this._requestWithEncryption('/miotspec/prop/set', req);
+    var data = await _requestWithEncryption('/miotspec/prop/set', req);
     // var result = ActionResData.fromJson(data);
     return data;
   }
 
-  miotAction(params) async {
+  Future<ActionResData> miotAction(params) async {
     var req = {
       "params": params,
     };
-    var data = await this._requestWithEncryption('/miotspec/action', req);
+    var data = await _requestWithEncryption('/miotspec/action', req);
     var result = ActionResData.fromJson(data);
     return result;
   }
 
-  _requestWithEncryption(String path, data) async {
-    if (!this.isLoggedIn()) {
+  Future _requestWithEncryption(String path, data) async {
+    if (!isLoggedIn()) {
       throw 'Please login first!';
     }
-    var nonceMap = this._generateNonce(security);
-    var signature = this._generateSignature(
+    var nonceMap = _generateNonce(security);
+    var signature = _generateSignature(
         path, nonceMap["signedNonce"], nonceMap["nonce"], data);
 
     Map<String, String> body = Map();
-    body.putIfAbsent("_nonce", () => nonceMap["nonce"]);
+    body.putIfAbsent("_nonce", () => nonceMap["nonce"] as String);
     body.putIfAbsent('signature', () => signature);
     body.putIfAbsent('data', () => json.encode(data));
 
     Map<String, String> headers = Map();
     headers.putIfAbsent("x-xiaomi-protocal-flag-cli", () => "PROTOCAL-HTTP2");
-    headers.putIfAbsent("Cookie",
-        () => "userId=${this.userId}; serviceToken=${this.serviceToken}");
-    String url = this._getApiUrl(this.region) + path;
+    headers.putIfAbsent(
+        "Cookie", () => "userId=${userId}; serviceToken=${serviceToken}");
+    var url = _getApiUrl() + path;
     var response =
         await http.post(Uri.parse(url), headers: headers, body: body);
     if (response.statusCode == 200) {
@@ -196,7 +203,7 @@ class MiCloud {
     }
   }
 
-  static _getCookieValue(String cookie, String key) {
+  static String _getCookieValue(String cookie, String key) {
     // print(cookie);
     var cookies = cookie.split('; ');
     for (var i = 0, l = cookies.length; i < l; i++) {
@@ -205,17 +212,16 @@ class MiCloud {
         return parts[1].replaceAll(key + "=", "");
       }
     }
+    throw 'Cookie not found';
   }
 
-  _getApiUrl(String country) {
-    country = country != null ? country.toLowerCase() : '';
+  String _getApiUrl() {
+    String regionDomain = region == 'cn' ? '' : region + '.';
 
-    String countryDomain = country == 'cn' ? '' : country + '.';
-
-    return "https://${countryDomain}api.io.mi.com/app";
+    return "https://${regionDomain}api.io.mi.com/app";
   }
 
-  _generateNonce(security) {
+  Map<String, String> _generateNonce(String security) {
     var nonceBytes = Utils.randomBytes(12);
     // print(nonceBytes);
     var securityBytes = base64Decode(security);
@@ -230,10 +236,10 @@ class MiCloud {
     // print(nonce);
     // print(signedNonce);
 
-    return {"nonce": nonce, "signedNonce": signedNonce};
+    return {"nonce": nonce, "signedNonce": signedNonce} as Map<String, String>;
   }
 
-  _generateSignature(uri, signedNonce, nonce, data) {
+  String _generateSignature(uri, signedNonce, nonce, data) {
     var signatureParams = [
       uri,
       signedNonce,
