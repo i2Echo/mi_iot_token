@@ -243,5 +243,5 @@ const List<String> regions = [
   "eh",
   "ye",
   "zm",
-  "zw"
+  "zw",
 ];

@@ -31,7 +31,7 @@ class MiCloud {
     'cn',
     'de',
     'in',
-    'i2'
+    'i2',
   ];
 
   // set your mi account region, if you don't have one, please use empty string represent all regions.
@@ -68,7 +68,7 @@ class MiCloud {
       final authTokens = {
         "security": map["ssecurity"],
         "serviceToken": token,
-        "userId": map["userId"]
+        "userId": map["userId"],
       };
       this.userName = userName;
       this.password = password;
@@ -267,7 +267,7 @@ class MiCloud {
       uri,
       signedNonce,
       nonce,
-      "data=${json.encode(data)}"
+      "data=${json.encode(data)}",
     ];
     final signedString = signatureParams.join('&');
 

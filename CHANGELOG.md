@@ -1,6 +1,9 @@
+## 1.1.0
+* Support Dart 3.0
+
 ## 1.0.0
-* refactor code, remove `API` and `Auth` class, replace with `MiCloud` class.
-* support more features: get device list, get device data, get device props, set device props, call device action.
+* Refactor code, remove `API` and `Auth` class, replace with `MiCloud` class.
+* Support more features: get device list, get device data, get device props, set device props, call device action.
 
 ## 0.2.0
 * Support more countries.
