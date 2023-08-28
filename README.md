@@ -1,5 +1,6 @@
 
 A xiaomi iot token extractor and device controller for dart.
+
 This package enables you to control your Xiaomi devices using the Mi Cloud. It's multi-platform, and supports mobile, desktop, and the browser.
 
 [![pub package](https://img.shields.io/pub/v/mi_iot_token.svg)](https://pub.dev/packages/mi_iot_token)
@@ -66,7 +67,7 @@ void main() async {
 }
 ``` 
 
-You can get more documents in [wiki](https://github.com/i2Echo/mi_iot_token/wiki).
+You can get more documents on [wiki](https://github.com/i2Echo/mi_iot_token/wiki).
 ### Device spec reference
 * [Official miot spec](https://home.miot-spec.com/)
 
