@@ -23,11 +23,11 @@ dependencies:
 ```
 
 ## Usage
+```dart
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:mi_iot_token/mi_iot_token.dart';
-```dart
 void main() async {
   MiCloud miCloud = MiCloud();
   var account = null;
